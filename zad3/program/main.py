@@ -1,14 +1,14 @@
 import threading
+import time
 
 import cv2
-import time
 import keyboard as K
-from pynput.keyboard import Key, Controller
 import numpy as np
 from PIL import ImageGrab
-
+from pynput.keyboard import Key, Controller
 
 pociski = []
+
 
 class Gracz:
     def __init__(self, x):
@@ -83,6 +83,7 @@ def generate_spaces(lista_pociskow):
     return pola
 
 def get_screen(index):
+    start_time = time.time()
     printscreen_pil = ImageGrab.grab(bbox=[13, 170, 1450, 975])
     printscreen_numpy = np.array(printscreen_pil.getdata(), dtype=
     'uint8').reshape((printscreen_pil.size[1], printscreen_pil.size[0], 3))
@@ -92,7 +93,8 @@ def get_screen(index):
     contours = cv2.findContours(Canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0]
     cntrRect = []
     przeciwnicy = []
-
+    second_time = time.time()
+    print(start_time - second_time)
     for i in contours:
         epsilon = 0.05 * cv2.arcLength(i, True)
         approx = cv2.approxPolyDP(i, epsilon, True)
@@ -125,25 +127,28 @@ def get_screen(index):
                         break
                 if not czy_istnieje:
                     pociski.append(Pocisk(sredniax, sredniay, index))
-                cv2.line(printscreen_numpy, (sredniax, sredniay), (sredniax, 804), color=(255, 255, 255), thickness=1)
+              #  cv2.line(printscreen_numpy, (sredniax, sredniay), (sredniax, 804), color=(255, 255, 255), thickness=1)
             elif 30 < xdif:
                 przeciwnicy.append(Przeciwnik(sredniax, sredniay))
-                cv2.line(printscreen_numpy, (sredniax, sredniay), (sredniax, 804), color=(255, 0, 255), thickness=1)
+               # cv2.line(printscreen_numpy, (sredniax, sredniay), (sredniax, 804), color=(255, 0, 255), thickness=1)
 
             cntrRect.append(approx)
-
+    third_time = time.time()
+    print(third_time - second_time)
     for ind,x in enumerate(pociski):
         if x.i <= index - 3:
             pociski.pop(ind)
 
     pola = generate_spaces(sorted(pociski))
-
+    four_time = time.time()
+    print(four_time - third_time)
     for p in pola:
         x1 = (p.x1, 800)
         x2 = (p.x2, 800)
-        cv2.circle(printscreen_numpy, x1, color=(255, 0, 255), thickness=-1, radius=5)
-        cv2.circle(printscreen_numpy, x2, color=(255, 0, 255), thickness=-1, radius=5)
-
+     #   cv2.circle(printscreen_numpy, x1, color=(255, 0, 255), thickness=-1, radius=5)
+    #    cv2.circle(printscreen_numpy, x2, color=(255, 0, 255), thickness=-1, radius=5)
+    five_time = time.time()
+    print(five_time - four_time)
     gracz_punkty = []
     wykryto_gracza = False
 
@@ -154,18 +159,20 @@ def get_screen(index):
     if len(gracz_punkty):
         wykryto_gracza = True
         gracz = Gracz(int(np.median(gracz_punkty))-48)
-        cv2.circle(printscreen_numpy, (gracz.x1,785), color=(0, 0, 255), thickness=-1, radius=5)
-        cv2.circle(printscreen_numpy, (gracz.x2,785), color=(0, 0, 255), thickness=-1, radius=5)
+  #      cv2.circle(printscreen_numpy, (gracz.x1,785), color=(0, 0, 255), thickness=-1, radius=5)
+   #     cv2.circle(printscreen_numpy, (gracz.x2,785), color=(0, 0, 255), thickness=-1, radius=5)
         to_move = find_best_space(pola, gracz)
         if to_move is None:
             return wykryto_gracza
         hmmm = to_move
         #for x in to_move:
-        cv2.line(printscreen_numpy, (hmmm[2].x1, 790), (hmmm[2].x2, 790), color=(255, 0, 0), thickness=1)
+#        cv2.line(printscreen_numpy, (hmmm[2].x1, 790), (hmmm[2].x2, 790), color=(255, 0, 0), thickness=1)
         if hmmm[0]<500:
             move_to(hmmm[1])
     #printscreen_pil.save(f"x{index}.png")
-    cv2.imwrite(f'g{index}.png', printscreen_numpy)
+ #   cv2.imwrite(f'g{index}.png', printscreen_numpy)
+    six_time = time.time()
+    print(six_time - five_time)
     return wykryto_gracza
 
 def move_to(pixels):
